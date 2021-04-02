@@ -1,25 +1,24 @@
-
 <?php
 class Database
 {
-    private $servername = 'localhost';
-    private $username = 'id14974971_group60';
-    private $password = 'Bm?{dIi5xt{StTux';
+	//Database parameters
+	private $host = 'localhost';
+	private $username = 'id14974971_group60';
+	private $password = 'Bm?{dIi5xt{StTux';
+	private $dbName = 'id14974971_dbms_project';
 
-    public $conn;
+	private $conn;
 
-    function connect()
-    {
-        $this->$conn = new mysqli($this->servername,$this->username,$this->password);
-        $this->$conn->select_db('id14974971_dbms_project');
-        // Check connection
-        if (mysqli_connect_error()) 
-        {
-            echo("Connection failed: " . mysqli_connect_error());
-        }
-        echo "Connected successfully";
-    }
-  
+	public function connect()
+	{
+		$this->conn = new mysqli($this->host, $this->username, $this->password, $this->dbName);
+
+		if($this->conn->connect_error)
+		{
+			die ("Connection error".$this->conn->connect_error);
+		}
+
+		return $this->conn;
+	}
+
 }
-
-?>
