@@ -1,41 +1,53 @@
 <?php
+	include 'Database.php';
 
-//including the connection file for database
-// include "Database.php";
+	//making connection to database
+	$db = new Database();
+	//representing connection variable to database
+	$conn = $db->connect();
 
-//getting values from user
-$name = $_POST["name"];
-$phone = $_POST["phone"];
-$age = $_POST["age"];
-$address = $_POST["address"];
-$email = $_POST["email"];
-$password = $_POST["password"];
-$password = md5($password);
-$auth = $_POST["auth"];
+	//variables to get from application using POST
+	$name = $_POST["name"];
+	$phone = $_POST["phone"];
+	$age = $_POST["age"];
+	$address = $_POST["address"];
+	$email = $_POST["email"];
+	$password = $_POST["password"];
+	$password = md5($password);
+	$auth = $_POST["auth"];
 
-$conn = mysqli_connect("localhost","id14974971_group60","Bm?{dIi5xt{StTux","id14974971_dbms_project");
+	//making prepared query
+	$stmt = $conn->prepare("INSERT INTO Patient (name,phone,age,address,email,password,auth) VALUES(?,?,?,?,?,?,?)");
 
-// $conn = new Database();
-// $conn->connect();
+	//binding parameters for placeholder markers
+	$stmt->bind_param("ssisssi",$name,$phone,$age,$address,$email,$password,$auth);
 
-// $query = "INSERT INTO Patient( name, phone, age, address, email, password, auth) VALUES ('$name','$phone',$age,'$address','$email','$password',$auth)";
+	//executing query
+	$stmt->execute();
 
-// if(mysqli_query($conn,$query))
-// {
-//     echo 'Successful';
-// }
-// else
-// {
-//     echo 'unsuccessful';
-// }
+	$detailsQuery = 'SELECT pid,name,phone,age,address,email,auth FROM Patient WHERE email=? AND password=?';
 
-$stmt = $conn->prepare("INSERT INTO Patient (name,phone,age,address,email,password,auth) VALUES(?,?,?,?,?,?,?)");
+	$stmt = $conn->prepare($detailsQuery);
+	$stmt->bind_param("ss",$email,$password);
+	$stmt->execute();
+	$stmt->store_result();
+	$stmt->bind_result($pid,$name,$phone,$age,$address,$email,$auth);
 
-//the first string refers to the type of data inputted respectively
-$stmt->bind_param("ssisssi",$name,$phone,$age,$address,$email,$password,$auth);
+	$stmt->fetch();
 
-$stmt->execute();
+	$data = array('pid' => $pid, 
+					'name' => $name,
+					'phone' => $phone,
+					'age' => $age,
+					'address' => $address,
+					'email' => $email,
+					'auth' => $auth);
 
-$conn->close();
+	$json = json_encode($data);
+
+	echo $json;
+
+	$conn->close();
+	$stmt->close();
 
 ?>
