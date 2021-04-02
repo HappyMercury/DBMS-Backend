@@ -4,44 +4,27 @@ include 'Database.php';
 $db = new Database();
 $conn = $db->connect();
 
-class Hospital
-{
-	private $hospital;
+$query = 'SELECT hname FROM hospital';
 
-	$query = "INSERT INTO hospital VALUES (?)"
+$stmt = $conn->prepare($query);
 
-	public function __construct($hospitalName)
-	{
-		$this->hospital = $hospitalName;
-
-	}
-}
-
-$hospital = $_POST['hospital'];
-$street = null;
-$area = null;
-$landmark = null;
-
-$query = "SELECT * FROM hospital WHERE hname=?";
-
-$stmt =  $conn->prepare($query);
-$stmt->bind_param("s",$hospital);
 $stmt->execute();
 
-$stmt->store_result();
+$stmt->bind_result($hname);
 
-if($stmt->num_rows>0)
+$data = array();
+$index = 0;
+
+//stores the list of hospitals in array
+while($stmt->fetch())
 {
-	//hospital already exists
-	//can insert value of doctor without asking for address
-	
-	
+	$data[$index++] = $hname;
 }
-else
-{
-	//ask for location which includes street,area,landmark
-	$myObj->ask = "yes";
-	$json = json_encode($myObj);
-	echo $json;
-}
+
+//returns list of hospitals
+$json = json_encode($data);
+
+echo $json;
+
 ?>
+
