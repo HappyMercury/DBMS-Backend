@@ -22,11 +22,13 @@ if($stmt->execute())
     $i = 0;
     
     $result = array();
+    $doctorDepartment = array();
     
     while($stmt->fetch())
     {
-        $result[$i++] = array("dep_id" => $dep_id,"dep_name" => $dep_name,"count" => $count);
+        $doctorDepartment[$i++] = array("dep_id" => $dep_id,"dep_name" => $dep_name,"count" => $count);
     }
+    $result['doctorDepartment'] = $doctorDepartment;
     http_response_code(200);
 }
 else
