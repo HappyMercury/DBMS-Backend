@@ -9,39 +9,40 @@
 	//variables to get from application using POST
 	$name = $_POST["name"];
 	$phone = $_POST["phone"];
-	$specialization = $_POST["age"];
 	$email = $_POST["email"];
 	$password = $_POST["password"];
 	$password = md5($password);
 	$auth = $_POST["auth"];
-	$hospital = $_POST['hospital'];
-	$department = $_POST['department'];
+	$hospName = $_POST["hname"];
+	$depName = $_POST["dep_name"];
 
 	//for department
 	$dnumQuery = "SELECT dep_id FROM department WHERE dep_name=?";
 
 	$deptStmt = $conn->prepare($dnumQuery);
-	$deptStmt->bind_param("s",$department);
+	$deptStmt->bind_param("s",$depName);
 	$deptStmt->execute();
 	$deptStmt->store_result();
 
 
-	if($deptStmt->num_rows>0){
+	if($deptStmt->num_rows>0)//if department already exists
+	{
 		$deptStmt->bind_result($dno);
 		$deptStmt->fetch();
 		$dnum = $dno;
 	}
-	else{
+	else//if department does not exist already
+	{
 		$dnumQuery = "INSERT INTO department (dep_name) VALUES(?);";
 
 		$deptStmt = $conn->prepare($dnumQuery);
-		$deptStmt->bind_param("s",$department);
+		$deptStmt->bind_param("s",$depName);
 		$deptStmt->execute();
 
 		$dnumQuery = "SELECT dep_id FROM department WHERE dep_name=?";
 
 		$deptStmt = $conn->prepare($dnumQuery);
-		$deptStmt->bind_param("s",$department);
+		$deptStmt->bind_param("s",$depName);
 		$deptStmt->execute();
 		$deptStmt->store_result();
 		$deptStmt->bind_result($dno);
@@ -53,7 +54,7 @@
 	$hnumQuery = "SELECT hid FROM hospital WHERE hname=?";
 
 	$deptStmt = $conn->prepare($hnumQuery);
-	$deptStmt->bind_param("s",$hospital);
+	$deptStmt->bind_param("s",$hospName);
 	$deptStmt->execute();
 	$deptStmt->store_result();
 	$deptStmt->bind_result($hno);
@@ -61,22 +62,63 @@
 	$hnum = $hno;
 
 	//making prepared query
-	$stmt = $conn->prepare("INSERT INTO doctor (name,specialization,phone,email,password,auth,dnum,hnum) VALUES(?,?,?,?,?,?,?,?)");
+	$stmt = $conn->prepare("INSERT INTO doctor (name,phone,email,password,auth,dnum,hnum) VALUES(?,?,?,?,?,?,?,?)");
 
 	//binding parameters for placeholder markers
-	$stmt->bind_param("sssssiii",$name,$specialization,$phone,$email,$password,$auth,$dnum,$hnum);
+	$stmt->bind_param("ssssiii",$name,$phone,$email,$password,$auth,$dnum,$hnum);
+
+	//variables for json response
+	$error = null;
+	$message = null;
+	$result = null;
 
 	//executing query
-	$stmt->execute();
-	
-	//sending back details after registration
-	$data = array('name' => $name,
-	                'specialization' => $specialization,
+	if($stmt->execute())
+	{
+		//getting doc_id for inserted doctor
+		$docStmt = $conn->prepare("SELECT doc_id from doctor where email=?");
+		$docStmt->bind_param("s",$email);
+		$docStmt->execute();
+		$docStmt->store_result();
+		$docStmt->bind_result($doc_id);
+		$docStmt->fetch();
+
+		$hospDeptQuery = "INSERT INTO hosp_dept(hnum,dnum) VALUES(?,?)";
+		$hospDept = $conn->prepare($hospDeptQuery);
+		$docStmt->bind_param("ii",$hnum,$dnum);
+		$docStmt->execute();
+		
+		$error = false;
+
+		$message = "success";
+
+		$result = array(
+					'doc_id' => $doc_id,
+					'name' => $name,
 	                'phone' => $phone,
 	                'email' => $email,
 	                'auth' => $auth,
-	                'hospital' => $hospital,
-	                'department' => $department);
+					'hid' => $hnum,
+					'hname' => $hospName,
+					'dep_id' => $dnum,
+	                'dep_name' => $depName);
+
+		http_response_code(200);
+	}
+
+	else{
+		$error = true;
+		$message = "failure";
+		$result = null;
+		http_response_code(200);
+	}
+	
+	//sending back details after registration
+	$data = array(
+		'error' => $error,
+		'message' => $message,
+		'result' => $result
+	);
 	                
 	 $json = json_encode($data);
 	 echo $json;
