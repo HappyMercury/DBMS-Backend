@@ -11,32 +11,42 @@ $error = false;
 $message = "success";
 $result;
 
-$query = "SELECT doc_id,phone,name,age,address,email,auth,dnum,hnum,hname FROM doctor,hospital where dnum=? AND hnum=hid";
+$query = "SELECT doc_id,phone,name,email,auth,dnum,hnum,hname FROM doctor,hospital where dnum=? AND hnum=hid";
 
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i",$dep_id);
 
 if($stmt->execute())
 {
-
-    $stmt->bind_result($doc_id,$phone,$name,$age,$address,$email,$auth,$dnum,$hnum,$hname);
+    
+    $stmt->store_result();
+    $stmt->bind_result($doc_id,$phone,$name,$email,$auth,$dnum,$hnum,$hname);
 
     $result = array();
     $index = 0;
+    
+    $depNameQuery = "SELECT dep_name FROM department WHERE dep_id=?";
+    $depNamestmt = $conn->prepare($depNameQuery);
+    $depNamestmt->bind_param("i",$dep_id);
+    $depNamestmt->execute();
+    $depNamestmt->store_result();
+    $depNamestmt->bind_result($dep_name);
+    $depNamestmt->fetch();
 
     //stores the list of hospitals in array
     while($stmt->fetch())
     {
-        $result[$index++] = array("doc_id" => $doc_id,
+        $result[$index++] = array(
+        "doc_id" => $doc_id,
         "phone" => $phone,
         "name" => $name,
-        "age" => $age,
-        "address" => $address,
         "email" => $email,
         "auth" => $auth,
-        "dep_id" => $dnum,
         "hid" => $hnum,
-        "hname" => $hname);
+        "hname" => $hname,
+        "dep_id" => $dnum,
+        "dep_name" => $dep_name
+        );
     }
     http_response_code(200);
 }
