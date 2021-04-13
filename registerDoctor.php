@@ -10,6 +10,7 @@
 	$name = $_POST["name"];
 	$phone = $_POST["phone"];
 	$email = $_POST["email"];
+	$slots = $_POST["slots"];
 	$password = $_POST["password"];
 	$password = md5($password);
 	$auth = $_POST["auth"];
@@ -83,6 +84,15 @@
 		$docStmt->bind_result($doc_id);
 		$docStmt->fetch();
 
+		//inserting the slots into doc_slots table
+		foreach($slots as $s)
+		{
+			$docSlotsQuery = "INSERT INTO doc_slots(doc_id,slot) VALUES(?,?)";
+			$hospDept = $conn->prepare($docSlotsQuery);
+			$docStmt->bind_param("ii",$doc_id,$s);
+			$docStmt->execute();
+		}
+
 		$hospDeptQuery = "INSERT INTO hosp_dept(hnum,dnum) VALUES(?,?)";
 		$hospDept = $conn->prepare($hospDeptQuery);
 		$docStmt->bind_param("ii",$hnum,$dnum);
@@ -93,14 +103,15 @@
 		$message = "success";
 
 		$result = array(
-					'doc_id' => $doc_id,
-					'name' => $name,
+			'doc_id' => $doc_id,
+			'name' => $name,
+			'slots' => $slots,
 	                'phone' => $phone,
 	                'email' => $email,
 	                'auth' => $auth,
-					'hid' => $hnum,
-					'hname' => $hospName,
-					'dep_id' => $dnum,
+			'hid' => $hnum,
+			'hname' => $hospName,
+			'dep_id' => $dnum,
 	                'dep_name' => $depName);
 
 		http_response_code(200);
