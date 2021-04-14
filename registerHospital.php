@@ -32,7 +32,7 @@ if($stmt->execute()) {
 	$hospStmt->bind_result($hid,$hname,$street,$area);
     $hospStmt->fetch();
 	
-	$hospital[0] = array(
+	$hospital = array(
 	    "hid" => $hid,
 	    "hname" => $hname,
 	    "street" => $street,
