@@ -44,7 +44,7 @@ if($stmt->execute())
         "auth" => $auth,
         "image" => $image,
         "hospital" => array("hid" => $hnum,"hname" => $hname,"street" => $street,"area" => $area),
-        "department" => array("dep_id" => $dnum,"hname" => $dep_name)
+        "department" => array("dep_id" => $dnum,"dep_name" => $dep_name)
         );
     }
     $result["doctors"] = $doctors;
