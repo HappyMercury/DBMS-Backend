@@ -15,12 +15,13 @@
 	$password = $_POST["password"];
 	$password = md5($password);
 	$auth = $_POST["auth"];
+	$image = $db->defaultImage;
 
 	//making prepared query
-	$stmt = $conn->prepare("INSERT INTO Patient (name,phone,age,address,email,password,auth) VALUES(?,?,?,?,?,?,?)");
+	$stmt = $conn->prepare("INSERT INTO Patient (name,phone,age,address,email,password,auth,image) VALUES(?,?,?,?,?,?,?,?)");
 
 	//binding parameters for placeholder markers
-	$stmt->bind_param("ssisssi",$name,$phone,$age,$address,$email,$password,$auth);
+	$stmt->bind_param("ssisssis",$name,$phone,$age,$address,$email,$password,$auth,$image);
 
 	//executing query
 	$stmt->execute();
@@ -53,7 +54,8 @@
 						'age' => $age,
 						'address' => $address,
 						'email' => $email,
-						'auth' => $auth);
+						'auth' => $auth,
+						'image' => $image);
 						
 		$result['patient'] = $patient;
 

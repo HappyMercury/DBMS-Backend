@@ -17,6 +17,7 @@
 	$auth = $_POST["auth"];
 	$hospName = $_POST["hname"];
 	$depName = $_POST["dep_name"];
+	$image = $db->defaultImage;
 
 	//for department
 	$dnumQuery = "SELECT dep_id FROM department WHERE dep_name=?";
@@ -64,10 +65,10 @@
 	$hnum = $hno;
 
 	//making prepared query
-	$stmt = $conn->prepare("INSERT INTO doctor (name,phone,email,password,auth,dnum,hnum) VALUES(?,?,?,?,?,?,?)");
+	$stmt = $conn->prepare("INSERT INTO doctor (name,phone,email,password,auth,dnum,hnum,image) VALUES(?,?,?,?,?,?,?,?)");
 
 	//binding parameters for placeholder markers
-	$stmt->bind_param("ssssiii",$name,$phone,$email,$password,$auth,$dnum,$hnum);
+	$stmt->bind_param("ssssiiis",$name,$phone,$email,$password,$auth,$dnum,$hnum,$image);
 
 	//variables for json response
 	$error = null;
@@ -123,6 +124,7 @@
 	                'phone' => $phone,
 	                'email' => $email,
 	                'auth' => $auth,
+					'image' => $image,
 					'hid' => $hnum,
 					'hname' => $hospName,
 					'dep_id' => $dnum,

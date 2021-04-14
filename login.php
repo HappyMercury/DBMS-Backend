@@ -15,14 +15,14 @@ $message = "success";
 $result;
 
 //first checking if present in patient
-$query = "SELECT pid,phone,name,age,address,email,auth FROM Patient WHERE email=? AND password=?";
+$query = "SELECT pid,phone,name,age,address,email,auth,image FROM Patient WHERE email=? AND password=?";
 
 //executing the patient query
 $stmt = $conn->prepare($query);
 $stmt->bind_param("ss",$email,$password);
 $stmt->execute();
 $stmt->store_result();
-$stmt->bind_result($pid,$phone,$name,$age,$address,$email,$auth);
+$stmt->bind_result($pid,$phone,$name,$age,$address,$email,$auth,$image);
 
 if($stmt->num_rows>0)//if exists in patient
 {
@@ -38,20 +38,21 @@ if($stmt->num_rows>0)//if exists in patient
 		'age' => $age,
 		'address' => $address,
 		'email' => $email,
-		'auth' => $auth
+		'auth' => $auth,
+        "image" => $image
 	);
-    $result = array("profession" => "patient",$patient);
+    $result = array("profession" => "patient","patient"=>$patient);
 }
 else
 {
-    $query = "SELECT doc_id,phone,name,email,auth,dnum,hnum FROM doctor WHERE email=? AND password=?";
+    $query = "SELECT doc_id,phone,name,email,auth,dnum,hnum,image FROM doctor WHERE email=? AND password=?";
 
     //executing doctor query
     $docStmt = $conn->prepare($query);
     $docStmt->bind_param("ss",$email,$password);
     $docStmt->execute();
     $docStmt->store_result();
-    $docStmt->bind_result($doc_id,$phone,$name,$email,$auth,$dnum,$hnum);
+    $docStmt->bind_result($doc_id,$phone,$name,$email,$auth,$dnum,$hnum,$image);
 
     if($docStmt->num_rows>0)//if exists in doctor
     {
@@ -72,24 +73,24 @@ else
         $depStmt = $conn->prepare($query);
         $depStmt->bind_param("i",$dnum);
         
+        $slots = array();
+        $slotQuery = "SELECT slot FROM doc_slots WHERE doc_id=?";
+        $slotStmt = $conn->prepare($slotQuery);
+        $slotStmt->bind_param("i",$doc_id);
+        $slotStmt->execute();
+        $slotStmt->store_result();
+        $slotStmt->bind_result($timing);
+        $i = 0;
+        while($slotStmt->fetch())
+        {
+            $slots[$i++] = $timing;
+        }
+        
         if($depStmt->execute())
         {
             $depStmt->store_result();
             $depStmt->bind_result($department);
             $depStmt->fetch();
-
-            $slots = array();
-            $slotQuery = "SELECT slot FROM doc_slots WHERE doc_id=?";
-            $slotStmt->bind_param("i",$doc_id);
-            $slotStmt->execute();
-            $slotStmt->store_result();
-            $slotStmt->bind_result($timing);
-            $i = 0;
-            while($slotStmt->fetch())
-            {
-                $slots[$i++] = $timing;
-            }
-
 
             //sending data to user in json
             $error = false;
@@ -100,6 +101,8 @@ else
                 'phone' => $phone,
                 'email' => $email,
                 'auth' => $auth,
+                "slots" => $slots,
+                "image" => $image,
                 'hid' => $hnum,
                 'hname' => $hospital,
                 'dep_id' => $dnum,
