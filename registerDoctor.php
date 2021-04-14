@@ -100,6 +100,18 @@
 		$hospDept = $conn->prepare($hospDeptQuery);
 		$hospDept->bind_param("ii",$hnum,$dnum);
 		$hospDept->execute();
+		
+		$slots = array();
+        $slotQuery = "SELECT slot FROM doc_slots WHERE doc_id=?";
+        $slotStmt->bind_param("i",$doc_id);
+        $slotStmt->execute();
+        $slotStmt->store_result();
+        $slotStmt->bind_result($timing);
+        $i = 0;
+        while($slotStmt->fetch())
+        {
+            $slots[$i++] = $timing;
+        }
 
 		$error = false;
 		$message = "success";
