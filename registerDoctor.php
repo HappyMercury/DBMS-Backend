@@ -54,15 +54,14 @@
 	}
 
 	//for hospital
-	$hnumQuery = "SELECT hid FROM hospital WHERE hname=?";
+	$hnumQuery = "SELECT hid,hname,street,area FROM hospital WHERE hname=?";
 
 	$hospStmt = $conn->prepare($hnumQuery);
 	$hospStmt->bind_param("s",$hospName);
 	$hospStmt->execute();
 	$hospStmt->store_result();
-	$hospStmt->bind_result($hno);
+	$hospStmt->bind_result($hnum,$hname,$street,$area);
 	$hospStmt->fetch();
-	$hnum = $hno;
 
 	//making prepared query
 	$stmt = $conn->prepare("INSERT INTO doctor (name,phone,email,password,auth,dnum,hnum,image) VALUES(?,?,?,?,?,?,?,?)");
@@ -104,6 +103,7 @@
 		
 		$slots = array();
         $slotQuery = "SELECT slot FROM doc_slots WHERE doc_id=?";
+        $slotStmt = $conn->prepare($slotQuery);
         $slotStmt->bind_param("i",$doc_id);
         $slotStmt->execute();
         $slotStmt->store_result();
@@ -125,10 +125,8 @@
 	                'email' => $email,
 	                'auth' => $auth,
 					'image' => $image,
-					'hid' => $hnum,
-					'hname' => $hospName,
-					'dep_id' => $dnum,
-	                'dep_name' => $depName);
+					"hospital" => array("hid" => $hnum,"hname" => $hname,"street" => $street,"area" => $area),
+                    "department" => array("dep_id" => $dnum,"dep_name" => $depName));
 
 		$result['doctor'] = $doctor;
 		http_response_code(200);
