@@ -4,11 +4,13 @@ include 'Database.php';
 $db = new Database();
 $conn = $db->connect();
 
+$hours = array(0,13,14,15,16,17,18,0,0,9,10,11,12);
+
 //post params
 $pid = $_POST['pid'];
 $doc_id = $_POST['doc_id'];
 $slot = $_POST['slot'];
-$hour = $_POST['hour'];
+$hour = $hours[$slot];
 $minute = $_POST['minute'];
 $second = $_POST['second'];
 $day = $_POST['day'];
@@ -22,15 +24,13 @@ date_default_timezone_set('Asia/Kolkata');
 
 $timestamp = mktime($hour,$minute,$second,$month,$day,$year);//converting dateTime to unix timestamp
 
-$dateTime = date("d-m-Y h-i a",$timestamp);
-
 $stmt = $conn->prepare($query);
 $stmt->bind_param("iiii",$pid,$doc_id,$timestamp,$slot);
 if($stmt->execute())//if query successfull
 {
     $error = false;
     $message = "success";
-    $result["appointment"] = array("pid" => $pid, "doc_id" => $doc_id, "dateTime" => $dateTime, "slot" => $slot);
+    $result = (object) [];
     http_response_code(200);
 }
 else{
