@@ -98,7 +98,7 @@ if($todayStmt->execute())
     ///////////////////////////////
     
     if($slotsToday==null)
-    $slotsToday = array();
+    $slotsToday = (object) [];
     
     $result['today'] = $slotsToday;
     http_response_code(200);
@@ -150,7 +150,7 @@ if($date1Stmt->execute())
     
     ///////////////////////////////
     
-    $result['date1'] = $slotsDate1;
+    $result['date1'] = $date1;
     http_response_code(200);
 }
 else{

@@ -22,8 +22,7 @@ if($stmt->execute())
     $i = 0;
     
     $result = array();
-    $doctorDepartment = array();
-    
+
     while($stmt->fetch())
     {
         $doctorDepartment[$i++] = array("dep_id" => $dep_id,"dep_name" => $dep_name,"count" => $count);
@@ -45,7 +44,7 @@ $data = array(
     "result" => $result
     );
 
-$json = json_encode($data,JSON_FORCE_OBJECT);
+$json = json_encode($data);
 echo $json;
 
 $stmt->close();

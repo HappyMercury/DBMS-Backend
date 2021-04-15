@@ -27,7 +27,6 @@ if($stmt->execute()) {
 	$hospStmt->bind_param("s",$hname);
 
 	$hospStmt->execute();
-
 	$hospStmt->store_result();
 	$hospStmt->bind_result($hid,$hname,$street,$area);
     $hospStmt->fetch();
@@ -38,12 +37,11 @@ if($stmt->execute()) {
 	    "street" => $street,
 	    "area" => $area
 	    );
-
+	    
     $result["hospital"] = $hospital;
     $error = false;
     $message = "success";
     http_response_code(200);
-
 }
 else
 {
@@ -65,6 +63,5 @@ $data = array(
 
     $stmt->close();
     $conn->close();
-
 
 ?>

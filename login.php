@@ -4,6 +4,7 @@ include 'Database.php';
 
 $db = new Database();
 $conn = $db->connect();
+$hours24 = $db->hours;
 
 //varibales from user
 $email = $_POST["email"];
@@ -59,13 +60,13 @@ else
         $docStmt->fetch();
 
         //getting hospital and department name
-        $query = "SELECT hname FROM hospital WHERE hid=?";
+        $query = "SELECT hname,street,area FROM hospital WHERE hid=?";
 
         $hospStmt = $conn->prepare($query);
         $hospStmt->bind_param("i",$hnum);
         $hospStmt->execute();
         $hospStmt->store_result();
-        $hospStmt->bind_result($hospital);
+        $hospStmt->bind_result($hospital,$street,$area);
         $hospStmt->fetch();
 
         $query = "SELECT dep_name FROM department WHERE dep_id=?";
@@ -86,6 +87,29 @@ else
             $slots[$i++] = $timing;
         }
         
+        //////////////////////////
+    
+	    $i=0;
+	    foreach($slots as $s)
+	    {
+	        $dummy[$i++] = $hours24[$s];//converting times to 24 hour clock
+	    }
+	    sort($dummy);
+	    $i=0;
+	    foreach($dummy as $d)
+	    {
+	        if($d>12)
+	        {
+	            $slots[$i++] = $d-12;
+	        }
+	        else
+	        {
+	            $slots[$i++] = $d;
+	        }
+	    }
+    
+    ///////////////////////////////
+        
         if($depStmt->execute())
         {
             $depStmt->store_result();
@@ -96,18 +120,15 @@ else
             $error = false;
             $message = "success";
             $doctor = array(
-                'doc_id' =>$doc_id,
-                'name' => $name,
-                'phone' => $phone,
-                'email' => $email,
-                'auth' => $auth,
-                "slots" => $slots,
-                "image" => $image,
-                'hid' => $hnum,
-                'hname' => $hospital,
-                'dep_id' => $dnum,
-                'dep_name' => $department
-                );
+					'doc_id' => $doc_id,
+					'name' => $name,
+					'slots' => $slots,
+	                'phone' => $phone,
+	                'email' => $email,
+	                'auth' => $auth,
+					'image' => $image,
+					"hospital" => array("hid" => $hnum,"hname" => $hospital,"street" => $street,"area" => $area),
+                    "department" => array("dep_id" => $dnum,"dep_name" => $department));
 
                 $result['profession'] = "doctor";
                 $result['doctor'] = $doctor;

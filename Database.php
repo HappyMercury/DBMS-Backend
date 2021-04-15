@@ -1,5 +1,4 @@
 <?php
-
 class Database
 {
 	//Database parameters
@@ -13,14 +12,45 @@ class Database
 	public function connect()
 	{
 		$this->conn = new mysqli($this->host, $this->username, $this->password, $this->dbName);
+
 		if($this->conn->connect_error)
 		{
 			die ("Connection error".$this->conn->connect_error);
 		}
+
 		return $this->conn;
-
 	}
+	
+	public $defaultImage = "https://imgur.com/Wvnj3E2";//default profile photo
+	
+	public $hours = array(0,13,14,15,16,17,18,0,0,9,10,11,12);
+	
+	
+	public function &arrangeSlots(&$slots)
+	{
+	    $i=0;
+	    foreach($slots as $s)
+	    {
+	        $dummy[$i++] = $hours[$s];//converting times to 24 hour clock
+	    }
+	    sort($dummy);
+	    $i=0;
+	    foreach($dummy as $d)
+	    {
+	        if($d>12)
+	        {
+	            $slots[$i++] = $d-12;
+	        }
+	        else
+	        {
+	            $slots[$i++] = $d;
+	        }
+	    }
+	    return $slots;
+	}
+	
+	
 
-	public $defaultImage = "https://imgur.com/Wvnj3E2";
+	
 
 }
