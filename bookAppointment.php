@@ -22,13 +22,15 @@ date_default_timezone_set('Asia/Kolkata');
 
 $timestamp = mktime($hour,$minute,$second,$month,$day,$year);//converting dateTime to unix timestamp
 
+$dateTime = date("d-m-Y h-i a",$timestamp);
+
 $stmt = $conn->prepare($query);
 $stmt->bind_param("iiii",$pid,$doc_id,$timestamp,$slot);
 if($stmt->execute())//if query successfull
 {
     $error = false;
     $message = "success";
-    $result = (object) [];
+    $result["appointment"] = array("pid" => $pid, "doc_id" => $doc_id, "dateTime" => $dateTime, "slot" => $slot);
     http_response_code(200);
 }
 else{
