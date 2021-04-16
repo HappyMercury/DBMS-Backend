@@ -6,6 +6,41 @@ $conn = $db->connect();
 
 $hours24 = $db->hours;
 
+///////////////////////////
+
+function slotsForDate($doc_id,$startDay,$endDay,$conn,$db)
+{
+    $dateQuery = "SELECT slot FROM doc_slots WHERE doc_id=? AND slot NOT IN(SELECT slot FROM appointment WHERE doc_id=? AND timestamp BETWEEN ? AND ?)";
+    $dateStmt = $conn->prepare($dateQuery);
+    $dateStmt->bind_param("iiii",$doc_id,$doc_id,$startDay,$endDay);
+    
+    if($dateStmt->execute())
+    {
+        $dateStmt->store_result();
+        $dateStmt->bind_result($slotDate);
+    
+        $i=0;
+        while($dateStmt->fetch())
+        {
+            $slotsDate[$i++] = $slotDate;
+        }
+            
+        $slotsDate = $db->sort_slots($slotsDate);
+        
+        http_response_code(200);
+        return $slotsDate;
+    }
+    else
+    {
+        $error = true;
+        $message = "failure";
+        $result = null;
+        http_response_code(200);
+    }
+}
+
+///////////////////////
+
 //post params
 $doc_id = $_POST['doc_id'];
 
@@ -55,7 +90,6 @@ if($docSlotsStmt->execute())
     }
 }
 
-///////////////////////////////////////
 //today
 $todayQuery = "SELECT slot FROM doc_slots WHERE doc_id=? AND slot NOT IN(SELECT slot FROM appointment WHERE doc_id=? AND timestamp BETWEEN ? AND ?)";
 
@@ -70,35 +104,15 @@ if($todayStmt->execute())
     $i=0;
     while($todayStmt->fetch())
     {
-        $makeTime = mkTime($hours24[$slotToday],0,0,$currentMonth,$currentday,$currentYear);
+        $makeTime = mkTime($hours24[$slotToday],0,0,$currentMonth,$currentDay,$currentYear);
         if($makeTime>$currentTime)
-        $slotsToday[$i++] = $slotToday;
+            $slotsToday[$i++] = $slotToday;
     }
     
-    /////////////////////////////////
-	    $i=0;
-	    foreach($slotsToday as $s)
-	    {
-	        $dummy[$i++] = $hours24[$s];//converting times to 24 hour clock
-	    }
-	    sort($dummy);
-	    $i=0;
-	    foreach($dummy as $d)
-	    {
-	        if($d>12)
-	        {
-	            $slotsToday[$i++] = $d-12;
-	        }
-	        else
-	        {
-	            $slotsToday[$i++] = $d;
-	        }
-	    }
-    
-    ///////////////////////////////
+    $slotsToday = $db->sort_slots($slotsToday);
     
     if($slotsToday==null)
-    $slotsToday = array();
+        $slotsToday = array();
     
     $result['today'] = $slotsToday;
     http_response_code(200);
@@ -111,157 +125,14 @@ else{
 }
 
 
-//////////////////////////////////
 //date1
-$date1Query = "SELECT slot FROM doc_slots WHERE doc_id=? AND slot NOT IN(SELECT slot FROM appointment WHERE doc_id=? AND timestamp BETWEEN ? AND ?)";
-$date1Stmt = $conn->prepare($date1Query);
-$date1Stmt->bind_param("iiii",$doc_id,$doc_id,$day1,$day2);
+$result['date1'] = slotsForDate($doc_id,$day1,$day2,$conn,$db);
 
-if($date1Stmt->execute())
-{
-    $date1Stmt->store_result();
-    $date1Stmt->bind_result($slotDate1);
-
-    $i=0;
-    while($date1Stmt->fetch())
-    {
-        $slotsDate1[$i++] = $slotDate1;
-    }
-    //////////////////////////
-    
-	    $i=0;
-	    foreach($slotsDate1 as $s)
-	    {
-	        $dummy[$i++] = $hours24[$s];//converting times to 24 hour clock
-	    }
-	    sort($dummy);
-	    $i=0;
-	    foreach($dummy as $d)
-	    {
-	        if($d>12)
-	        {
-	            $slotsDate1[$i++] = $d-12;
-	        }
-	        else
-	        {
-	            $slotsDate1[$i++] = $d;
-	        }
-	    }
-    
-    ///////////////////////////////
-    
-    $result['date1'] = $slotsDate1;
-    http_response_code(200);
-}
-else{
-    $error = true;
-    $message = "failure";
-    $result = null;
-    http_response_code(200);
-}
-
-
-////////////////////////////////////////
 //date2
-$date2Query = "SELECT slot FROM doc_slots WHERE doc_id=? AND slot NOT IN(SELECT slot FROM appointment WHERE doc_id=? AND timestamp BETWEEN ? AND ?)";
-$date2Stmt = $conn->prepare($date2Query);
-$date2Stmt->bind_param("iiii",$doc_id,$doc_id,$day2,$day3);
+$result['date2'] = slotsForDate($doc_id,$day2,$day3,$conn,$db);
 
-if($date2Stmt->execute())
-{
-    $date2Stmt->store_result();
-    $date2Stmt->bind_result($slotDate2);
-
-    $i=0;
-    while($date2Stmt->fetch())
-    {
-        $slotsDate2[$i++] = $slotDate2;
-    }
-
-    
-    //////////////////////////
-    
-	    $i=0;
-	    foreach($slotsDate2 as $s)
-	    {
-	        $dummy[$i++] = $hours24[$s];//converting times to 24 hour clock
-	    }
-	    sort($dummy);
-	    $i=0;
-	    foreach($dummy as $d)
-	    {
-	        if($d>12)
-	        {
-	            $slotsDate2[$i++] = $d-12;
-	        }
-	        else
-	        {
-	            $slotsDate2[$i++] = $d;
-	        }
-	    }
-    
-    ///////////////////////////////
-    
-    $result['date2'] = $slotsDate2;
-    http_response_code(200);
-}
-else{
-    $error = true;
-    $message = "failure";
-    $result = null;
-    http_response_code(200);
-}
-
-
-////////////////////////////
 //date3
-$date3Query = "SELECT slot FROM doc_slots WHERE doc_id=? AND slot NOT IN(SELECT slot FROM appointment WHERE doc_id=? AND timestamp BETWEEN ? AND ?)";
-$date3Stmt = $conn->prepare($date3Query);
-$date3Stmt->bind_param("iiii",$doc_id,$doc_id,$day3,$day4);
-
-if($date3Stmt->execute())
-{
-    $date3Stmt->store_result();
-    $date3Stmt->bind_result($slotDate3);
-
-    $i=0;
-    while($date3Stmt->fetch())
-    {
-        $slotsDate3[$i++] = $slotDate3;
-    }
-
-    //////////////////////////
-    
-	    $i=0;
-	    foreach($slotsDate3 as $s)
-	    {
-	        $dummy[$i++] = $hours24[$s];//converting times to 24 hour clock
-	    }
-	    sort($dummy);
-	    $i=0;
-	    foreach($dummy as $d)
-	    {
-	        if($d>12)
-	        {
-	            $slotsDate3[$i++] = $d-12;
-	        }
-	        else
-	        {
-	            $slotsDate3[$i++] = $d;
-	        }
-	    }
-    
-    ///////////////////////////////
-    
-    $result['date3'] = $slotsDate3;
-    http_response_code(200);
-}
-else{
-    $error = true;
-    $message = "failure";
-    $result = null;
-    http_response_code(200);
-}
+$result['date3'] = slotsForDate($doc_id,$day3,$day4,$conn,$db);
 
 $data = array(
     "error" => $error,

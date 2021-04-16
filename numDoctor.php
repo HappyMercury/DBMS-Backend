@@ -12,7 +12,6 @@ $result;
 $query = "SELECT dep_id,dep_name,count(*) FROM department,doctor WHERE dep_id=dnum GROUP BY dep_id";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param();
 
 if($stmt->execute())
 {

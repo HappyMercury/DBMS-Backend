@@ -26,12 +26,12 @@ class Database
 	public $hours = array(0,13,14,15,16,17,18,0,0,9,10,11,12);
 	
 	
-	public function &arrangeSlots(&$slots)
-	{
-	    $i=0;
+	public function sort_slots($slots) {
+        $hours24 = array(0,13,14,15,16,17,18,0,0,9,10,11,12);
+        $i=0;
 	    foreach($slots as $s)
 	    {
-	        $dummy[$i++] = $hours[$s];//converting times to 24 hour clock
+	        $dummy[$i++] = $hours24[$s];//converting times to 24 hour clock
 	    }
 	    sort($dummy);
 	    $i=0;
@@ -47,10 +47,6 @@ class Database
 	        }
 	    }
 	    return $slots;
-	}
+    }
 	
-	
-
-	
-
 }

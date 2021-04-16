@@ -87,28 +87,7 @@ else
             $slots[$i++] = $timing;
         }
         
-        //////////////////////////
-    
-	    $i=0;
-	    foreach($slots as $s)
-	    {
-	        $dummy[$i++] = $hours24[$s];//converting times to 24 hour clock
-	    }
-	    sort($dummy);
-	    $i=0;
-	    foreach($dummy as $d)
-	    {
-	        if($d>12)
-	        {
-	            $slots[$i++] = $d-12;
-	        }
-	        else
-	        {
-	            $slots[$i++] = $d;
-	        }
-	    }
-    
-    ///////////////////////////////
+        $slots = $db->sort_slots($slots);
         
         if($depStmt->execute())
         {
