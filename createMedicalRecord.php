@@ -10,6 +10,8 @@ $attachment = $_POST['attachment'];
 $diagnosis = $_POST['diagnosis'];
 $description = $_POST['description'];
 
+date_default_timezone_set('Asia/Kolkata');
+
 //converting time into day,month,year,hour,minute,second
 $tok = strtok($date, "-");
 $i = 0;
@@ -29,7 +31,7 @@ $timestamp = mktime(0,0,0,$month,$day,$year);
 $query = "INSERT INTO medical_records (pid,DOE,description,diagnosis,attachment) VALUES (?,?,?,?,?)";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("iiss",$pid,$timestamp,$description,$diagnosis,$attachment);
+$stmt->bind_param("iisss",$pid,$timestamp,$description,$diagnosis,$attachment);
 if($stmt->execute())
 {
     $error = false;
