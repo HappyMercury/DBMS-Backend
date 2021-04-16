@@ -4,12 +4,13 @@ include 'Database.php';
 
 $db = new Database();
 $conn = $db->connect();
-$hours24 = $db->hours;
 
 //json params
 $error=  false;
 $message = "success";
 $result;
+
+date_default_timezone_set('Asia/Kolkata');
 
 //post params
 $pid = $_POST['pid'];
@@ -17,6 +18,8 @@ $pid = $_POST['pid'];
 //comparing with half hour back
 $time = time();//timestamp value of current time minus half an hour
 $time = $time-1800;
+
+$previous = null;
 
 //previous appointments
 
@@ -29,7 +32,7 @@ $stmt->bind_param("ii",$pid,$time);
 if($stmt->execute())//query successful
 {
     $stmt->store_result();
-    $stmt->bind_result($pid,$doc_id,$timestamp);
+    $stmt->bind_result($p,$doc_id,$timestamp);
 
     //converting timestamp to date time
     date_default_timezone_set('Asia/Kolkata');
@@ -100,7 +103,6 @@ else
 }
 
 if($previous==null)
-
 {
     $previous = array();
 }
@@ -118,36 +120,35 @@ $upcoming = null;
 
 $time = time();
 
-$query = "SELECT pid,doc_id,timestamp FROM appointment WHERE pid=? AND timestamp>=? ORDER BY timestamp";
+$upcomingQuery = "SELECT pid,doc_id,timestamp FROM appointment WHERE pid=? AND timestamp>=? ORDER BY timestamp";
 
-$stmt = $conn->prepare($query);
-$stmt->bind_param("ii",$pid,$time);
+$upcomingStmt = $conn->prepare($upcomingQuery);
+$upcomingStmt->bind_param("ii",$pid,$time);
 
-if($stmt->execute())//query successful
+if($upcomingStmt->execute())//query successful
 {
-    $stmt->store_result();
+    $upcomingStmt->store_result();
 
-    $stmt->bind_result($pid,$doc_id,$timestamp);
+    $upcomingStmt->bind_result($p,$doc_id,$timestamp);
 
     //converting timestamp to date time
-    date_default_timezone_set('Asia/Kolkata');
 
     $date = date("d-m-Y h:i a");
 
     $i = 0;
     $index = 0;
 
-    while($stmt->fetch())
+    while($upcomingStmt->fetch())
     {
         //getting doctor details for doctor id
 
         ////doctor details
-        $docQuery = "SELECT doc_id,phone,name,email,auth,dnum,hnum,image,hid,hname,street,area,dep_id,dep_name FROM doctor,hospital,department WHERE doc_id=? AND hnum=hid AND dep_id=dnum";
+        $docQuery = "SELECT doc_id,phone,name,email,auth,dnum,hnum,image,hname,street,area,dep_name FROM doctor,hospital,department WHERE doc_id=? AND hnum=hid AND dep_id=dnum";
         $docStmt = $conn->prepare($docQuery);
         $docStmt->bind_param("i",$doc_id);
         $docStmt->execute();
         $docStmt->store_result();
-        $docStmt->bind_result($did,$phone,$name,$email,$auth,$dnum,$hnum,$image,$hnum,$hname,$street,$area,$dnum,$depName);
+        $docStmt->bind_result($did,$phone,$name,$email,$auth,$dnum,$hnum,$image,$hname,$street,$area,$depName);
         $docStmt->fetch();
 
         /////slots

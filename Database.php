@@ -21,7 +21,7 @@ class Database
 		return $this->conn;
 	}
 	
-	public $defaultImage = "https://imgur.com/Wvnj3E2";//default profile photo
+	public $defaultImage = "";//default profile photo
 	
 	public $hours = array(0,13,14,15,16,17,18,0,0,9,10,11,12);
 	
