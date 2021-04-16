@@ -5,7 +5,7 @@ $db = new Database();
 $conn = $db->connect();
 
 $pid = $_POST['pid'];
-$date = $_POST['date'];
+$doe = $_POST['doe'];
 $attachment = $_POST['attachment'];
 $diagnosis = $_POST['diagnosis'];
 $description = $_POST['description'];
@@ -13,7 +13,7 @@ $description = $_POST['description'];
 date_default_timezone_set('Asia/Kolkata');
 
 //converting time into day,month,year,hour,minute,second
-$tok = strtok($date, "-");
+$tok = strtok($doe, "-");
 $i = 0;
 while ($tok !== false) 
 {
