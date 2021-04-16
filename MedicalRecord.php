@@ -8,16 +8,14 @@ $pid = $_POST['pid'];
 
 date_default_timezone_set('Asia/Kolkata');
 
+$medicalRecords = null;
+
 $query = "SELECT mid,pid,DOE,description,diagnosis,attachment FROM medical_records WHERE pid=? ORDER BY DOE DESC";
 
 $stmt = $conn->prepare($query);
-try{
+
 $stmt->bind_param("i",$pid);
-}
-catch(Exception $e)
-{
-    echo $e;
-}
+
 if($stmt->execute())
 {
     $stmt->store_result();
@@ -31,7 +29,6 @@ if($stmt->execute())
 
         $medicalRecords[$i++] = array(
             "mid" => $mid,
-            "pid" => $pid,
             "doe" => $date,
             "description" => $description,
             "diagnosis" => $diagnosis,
@@ -40,6 +37,10 @@ if($stmt->execute())
     }
     $error = false;
     $message = "success";
+    if($medicalRecords==null)
+    {
+        $medicalRecords = array();
+    }
     $result['medicalRecords'] = $medicalRecords;
     http_response_code(200);
 }
