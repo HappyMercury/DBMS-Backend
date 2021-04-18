@@ -44,6 +44,31 @@ if($stmt->execute())//if query successfull
     $message = "success";
     $result = (object) [];
     http_response_code(200);
+    
+    //getting doctor and patient details for message
+    $doctorQuery = 'select phone from doctor where doc_id=?';
+    $doctorStmt = $conn->prepare($doctorQuery);
+    $doctorStmt->bind_param('i',$doc_id);
+    $doctorStmt->execute();
+    $doctorStmt->store_result();
+    $doctorStmt->bind_result($phone);
+    $doctorStmt->fetch();
+    
+    
+    $patientQuery = 'select name from Patient where pid=?';
+    $patientStmt = $conn->prepare($patientQuery);
+    $patientStmt->bind_param('i',$pid);
+    $patientStmt->execute();
+    $patientStmt->store_result();
+    $patientStmt->bind_result($name);
+    $patientStmt->fetch();
+    
+    //sending message to doctor
+    $bookingMessage = 'Patient name: '.$name.' has booked an appointment for '.$t;
+    
+    $to = '+91'.$phone;
+    
+    include 'sms.php';
 }
 else{
     $error = true;
