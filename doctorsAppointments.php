@@ -24,26 +24,43 @@ $day1 = $day0 + 86400;//next day
 date_default_timezone_set('Asia/Kolkata');
 
 //previous
-$previousQuery = "SELECT doc_id,timestamp from appointment where doc_id=? and timestamp<? order by timestamp desc";
+$previousQuery = "SELECT pid,doc_id,timestamp from appointment where doc_id=? and timestamp<? order by timestamp desc";
 
 $dateStmt = $conn->prepare($previousQuery);
 $dateStmt->bind_param("ii",$doc_id,$currentTime);
 
 if($dateStmt->execute())
 {
+    
     $dateStmt->store_result();
-    $dateStmt->bind_result($d0,$timestamp0);
+    $dateStmt->bind_result($p0,$d0,$timestamp0);
+    
+    $patientStmt = $conn->prepare('SELECT pid,name,phone,age,address,email,auth,image FROM Patient WHERE pid=?');
+    $patientStmt->bind_param("i",$p0);//for every pid received
 
     $i=0;
     while($dateStmt->fetch())
     {
+        $patientStmt->execute();
+        $patientStmt->store_result();
+        $patientStmt->bind_result($pi0,$name,$phone,$age,$address,$email,$auth,$image);
+        $patientStmt->fetch();
+        
         if($timestamp<$currentTime)
-            $slotsDate0[$i++] = date('d-m-Y h:i a',$timestamp0);
+            $previous[$i++] = array('time'=>date('d-m-Y h:i a',$timestamp0),
+                                    'patient'=> array('pid' => $pi0, 
+                                                    'name' => $name,
+                                                    'phone' => $phone,
+                                                    'age' => $age,
+                                                    'address' => $address,
+                                                    'email' => $email,
+                                                    'auth' => $auth,
+                                                    'image' => $image));
     }
     
-    $result['previous'] = $slotsDate0;
+    $result['previous'] = $previous;
     $error = false;
-$message = "success";
+    $message = "success";
     http_response_code(200);
 }
 else
@@ -55,25 +72,40 @@ else
 }
 
 //upcoming
-$upcomingQuery = "SELECT doc_id,timestamp from appointment where doc_id=? and timestamp>? order by timestamp";
+$upcomingQuery = "SELECT pid,doc_id,timestamp from appointment where doc_id=? and timestamp>? order by timestamp";
 $dateStmt = $conn->prepare($upcomingQuery);
     $dateStmt->bind_param("ii",$doc_id,$day1);
     
     if($dateStmt->execute())
     {
         $dateStmt->store_result();
-        $dateStmt->bind_result($d1,$timestamp1);
-    
+        $dateStmt->bind_result($p1,$d1,$timestamp1);
+
+        $patientStmt = $conn->prepare('SELECT pid,name,phone,age,address,email,auth,image FROM Patient WHERE pid=?');
+        $patientStmt->bind_param("i",$p1);//for every pid received
         $i=0;
         while($dateStmt->fetch())
         {
-            $slotsDate1[$i++] = date('d-m-Y h:i a',$timestamp1);
+            $patientStmt->execute();
+            $patientStmt->store_result();
+            $patientStmt->bind_result($pi1,$name,$phone,$age,$address,$email,$auth,$image);
+            $patientStmt->fetch();
+        
+            $upcoming[$i++] = array('time'=>date('d-m-Y h:i a',$timestamp1),
+                                        'patient'=> array('pid' => $pi1, 
+                                                    'name' => $name,
+                                                    'phone' => $phone,
+                                                    'age' => $age,
+                                                    'address' => $address,
+                                                    'email' => $email,
+                                                    'auth' => $auth,
+                                                    'image' => $image));
         }
   
         http_response_code(200);
         $error = false;
-$message = "success";
-        $result['upcoming'] = $slotsDate1;
+    $message = "success";
+        $result['upcoming'] = $upcoming;
 
     }
     else
@@ -86,27 +118,44 @@ $message = "success";
 
 
 //today
-$todayQuery = "SELECT timestamp,slot from appointment where doc_id=? and timestamp between ? and ?";
+$todayQuery = "SELECT pid,timestamp,slot from appointment where doc_id=? and timestamp between ? and ?";
 $todayStmt = $conn->prepare($todayQuery);
 $todayStmt->bind_param("iii",$doc_id,$currentTime,$day1);
 
 if($todayStmt->execute())
 {
     $todayStmt->store_result();
-    $todayStmt->bind_result($timestamp2,$slotToday);
+    $todayStmt->bind_result($p2,$timestamp2,$slotToday);
+    $patientStmt = $conn->prepare('SELECT pid,name,phone,age,address,email,auth,image FROM Patient WHERE pid=?');
+    $patientStmt->bind_param("i",$p2);//for every pid received
 
     $i=0;
     while($todayStmt->fetch())
     {
-        $makeTime = mkTime($hours24[$slotToday],0,0,$currentMonth,$currentDay,$currentYear);
+        $patientStmt->execute();
+        $patientStmt->store_result();
+        $patientStmt->bind_result($pi2,$name,$phone,$age,$address,$email,$auth,$image);
+        $patientStmt->fetch();
+        
+        $makeTime = mktime($hours24[$slotToday],0,0,$currentMonth,$currentDay,$currentYear);
         if($makeTime>$currentTime)
-            $slotsToday[$i++] = date('d-m-Y h:i a',$timestamp2);
+        {
+            $today[$i++] = array('time'=>date('d-m-Y h:i a',$timestamp2),
+                                        'patient'=> array('pid' => $pi2, 
+                                                        'name' => $name,
+                                                        'phone' => $phone,
+                                                        'age' => $age,
+                                                        'address' => $address,
+                                                        'email' => $email,
+                                                        'auth' => $auth,
+                                                        'image' => $image));
+        }
     }
     
-    if($slotsToday==null)
-        $slotsToday = array();
+    if($today==null)
+        $today = array();
     
-    $result['todayAppointments'] = $slotsToday;
+    $result['todayAppointments'] = $today;
     $error = false;
     $message = "success";
     http_response_code(200);
