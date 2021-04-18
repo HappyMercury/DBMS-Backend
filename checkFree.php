@@ -31,6 +31,7 @@ $query = "SELECT pid from appointment where pid=? and timestamp=?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('ii',$pid,$timestamp);
 $stmt->execute();
+$stmt->store_result();
 
 if($stmt->num_rows==0)
 {
