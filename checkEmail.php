@@ -5,11 +5,24 @@ $db = new Database();
 $conn = $db->connect();
 
 $email = $_POST['email'];
+$password = md5($_POST['password']);
+$auth = $_POST['auth'];
 
-$query = "(select email from Patient where email=?) union (select email from doctor where email=?)";
+if($auth==0)//custom authentication
+{
 
-$emailCheckStmt = $conn->prepare($query);
-$emailCheckStmt->bind_param('ss',$email,$email);
+    $query = "(select email from Patient where email=? and password=?) union (select email from doctor where email=? and password=?)";
+    $emailCheckStmt = $conn->prepare($query);
+    $emailCheckStmt->bind_param('ssss',$email,$password,$email,$password);
+}
+else//google login checking only ewmail
+{
+    $query = "(select email from Patient where email=?) union (select email from doctor where email=?)";
+    $emailCheckStmt = $conn->prepare($query);
+    $emailCheckStmt->bind_param('ss',$email,$email);
+}
+
+
 $emailCheckStmt->execute();
 $emailCheckStmt->store_result();
 
