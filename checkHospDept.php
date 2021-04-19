@@ -4,13 +4,13 @@ include 'Database.php';
 $db = new Database();
 $conn = $db->connect();
 
-$hid = $_POST['hid'];
-$dep_id = $_POST['dep_id'];
+$hname = $_POST['hname'];
+$dep_name = $_POST['dep_name'];
 
-$query = "select hnum,dnum from hosp_dept where hnum=? and dnum=?";
+$query = "select hnum,dnum from hosp_dept where hnum=(select hid from hospital where hname=?) and dnum=(select dep_id from department where dep_name=?)";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param('ii',$hid,$dep_id);
+$stmt->bind_param('ss',$hname,$dep_name);
 $stmt->execute();
 $stmt->store_result();
 
